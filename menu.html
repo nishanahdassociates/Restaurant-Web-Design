@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu - Savoir Restaurant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/7.3.2/pixi.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=Crimson+Text:wght@400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --charcoal: #2C2C2C;
+            --cream: #F8F6F0;
+            --sage: #8B9A8C;
+            --sienna: #A0522D;
+            --espresso: #3A3A3A;
+        }
+        
+        body {
+            background-color: var(--cream);
+            color: var(--espresso);
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .nav-blur {
+            backdrop-filter: blur(20px);
+            background: rgba(248, 246, 240, 0.95);
+        }
+        
+        .menu-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+        
+        .menu-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(44, 44, 44, 0.15);
+        }
+        
+        .menu-card.hidden {
+            display: none;
+        }
+        
+        .category-filter {
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .category-filter.active {
+            background: var(--sage);
+            color: var(--cream);
+        }
+        
+        .category-filter:hover {
+            background: var(--sage);
+            color: var(--cream);
+        }
+        
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .order-summary {
+            position: sticky;
+            top: 120px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(44, 44, 44, 0.1);
+        }
+        
+        .dietary-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: bold;
+            margin-right: 4px;
+        }
+        
+        .vegetarian { background: #4ade80; color: white; }
+        .vegan { background: #16a34a; color: white; }
+        .gluten-free { background: #f59e0b; color: white; }
+        .spicy { background: #ef4444; color: white; }
+        
+        .search-box {
+            background: white;
+            border: 2px solid rgba(139, 154, 140, 0.2);
+            border-radius: 12px;
+            padding: 12px 16px;
+            transition: all 0.2s ease;
+        }
+        
+        .search-box:focus {
+            outline: none;
+            border-color: var(--sage);
+            box-shadow: 0 0 0 3px rgba(139, 154, 140, 0.1);
+        }
+        
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .quantity-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid var(--sage);
+            background: transparent;
+            color: var(--sage);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .quantity-btn:hover {
+            background: var(--sage);
+            color: var(--cream);
+        }
+        
+        .wine-pairing {
+            background: linear-gradient(135deg, var(--sage), var(--sienna));
+            color: var(--cream);
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 12px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 nav-blur border-b border-sage/20">
+        <div class="max-w-7xl mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 bg-sage rounded-full flex items-center justify-center">
+                        <span class="text-cream font-bold text-sm">S</span>
+                    </div>
+                    <span class="text-2xl font-bold text-charcoal" style="font-family: 'Playfair Display', serif;">Savoir</span>
+                </div>
+                
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="index.html" class="text-charcoal/70 hover:text-charcoal transition-colors">Home</a>
+                    <a href="menu.html" class="text-charcoal font-medium border-b-2 border-sienna">Menu</a>
+                    <a href="about.html" class="text-charcoal/70 hover:text-charcoal transition-colors">About</a>
+                    <button onclick="scrollToReservation()" class="bg-sienna text-cream px-6 py-2 rounded-full hover:bg-sienna/90 transition-colors">
+                        Reserve Table
+                    </button>
+                </div>
+                
+                <button class="md:hidden text-charcoal">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Menu Header -->
+    <section class="pt-32 pb-16 bg-cream">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-12 reveal">
+                <h1 class="text-6xl font-bold text-charcoal mb-4" style="font-family: 'Playfair Display', serif;">
+                    Our Culinary Collection
+                </h1>
+                <p class="text-xl text-charcoal/70 max-w-3xl mx-auto">
+                    Crafted with passion, sourced with care, and presented with artistry. 
+                    Each dish tells a story of flavor and innovation.
+                </p>
+            </div>
+            
+            <!-- Search Bar -->
+            <div class="max-w-md mx-auto mb-8 reveal">
+                <input type="text" id="menu-search" placeholder="Search dishes..." 
+                       class="search-box w-full">
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Menu Content -->
+    <section class="py-16 bg-cream">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid lg:grid-cols-4 gap-8">
+                <!-- Category Filters -->
+                <div class="lg:col-span-1">
+                    <div class="sticky top-32 space-y-6">
+                        <div class="bg-white rounded-2xl p-6 shadow-lg">
+                            <h3 class="text-xl font-bold text-charcoal mb-4">Categories</h3>
+                            <div class="space-y-2">
+                                <div class="category-filter active px-4 py-3 rounded-lg bg-sage text-cream" data-category="all">
+                                    All Dishes
+                                </div>
+                                <div class="category-filter px-4 py-3 rounded-lg hover:bg-sage hover:text-cream transition-colors" data-category="appetizers">
+                                    Appetizers
+                                </div>
+                                <div class="category-filter px-4 py-3 rounded-lg hover:bg-sage hover:text-cream transition-colors" data-category="mains">
+                                    Main Courses
+                                </div>
+                                <div class="category-filter px-4 py-3 rounded-lg hover:bg-sage hover:text-cream transition-colors" data-category="desserts">
+                                    Desserts
+                                </div>
+                                <div class="category-filter px-4 py-3 rounded-lg hover:bg-sage hover:text-cream transition-colors" data-category="beverages">
+                                    Beverages
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-2xl p-6 shadow-lg">
+                            <h3 class="text-xl font-bold text-charcoal mb-4">Dietary</h3>
+                            <div class="space-y-3">
+                                <label class="flex items-center">
+                                    <input type="checkbox" class="dietary-filter" data-dietary="vegetarian">
+                                    <span class="ml-3 text-sm">Vegetarian</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" class="dietary-filter" data-dietary="vegan">
+                                    <span class="ml-3 text-sm">Vegan</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" class="dietary-filter" data-dietary="gluten-free">
+                                    <span class="ml-3 text-sm">Gluten-Free</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Menu Items Grid -->
+                <div class="lg:col-span-3">
+                    <div class="grid md:grid-cols-2 gap-6" id="menu-grid">
+                        <!-- Appetizers -->
+                        <div class="menu-card bg-white rounded-2xl overflow-hidden shadow-lg" data-category="appetizers" data-dietary="vegetarian">
+                            <img src="./resources/menu-items/foie-gras.jpg" alt="Pan-Seared Foie Gras" class="w-full h-48 object-cover">
+                            <div class="p-6">
+                                <div class="flex justify-between items-start mb-3">
+                                    <h3 class="text-xl font-bold text-charcoal" style="font-family: 'Crimson Text', serif;">
+                                        Pan-Seared Foie Gras
+                                    </h3>
+                                    <span class="text-xl font-bold text-sienna">$28</span>
+                                </div>
+                                <p class="text-charcoal/70 mb-4 text-sm">
+                                    Delicate foie gras seared to perfection, served on toasted brioche with 
+                                    cherry compote and aged balsamic reduction.
+                                </p>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <span class="dietary-icon vegetarian">V</span>
+                                        <span class="text-xs text-charcoal/60">Chef's Signature</span>
+                                    </div>
+                                    <button class="add-to-order bg-sage text-cream px-4 py-2 rounded-lg hover:bg-sage/90 transition-colors text-sm">
+                                        Add to Order
+                                    </button>
+                                </div>
+                                <div class="wine-pairing">
+                                    <strong>Wine Pairing:</strong> Sauternes Château d'Yquem 2018
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="menu-card bg-white rounded-2xl overflow-hidden shadow-lg" data-category="appetizers">
+                            <img src="./resources/menu-items/oysters.jpg" alt="Oysters Rockefeller" class="w-full h-48 object-cover">
+                            <div class="p-6">
+                                <div class="flex justify-between items-start mb-3">
+                                    <h3 class="text-xl font-bold text-charcoal" style="font-family: 'Crimson Text', serif;">
+                                        Oysters Rockefeller
+                                    </h3>
+                                    <span class="text-xl font-bold text-sienna">$24</span>
+                                </div>
+                                <p class="text-charcoal/70 mb-4 text-sm">
+                                    Fresh Atlantic oysters topped with spinach, herbs, and Pernod, 
+                                    finished with golden breadcrumbs.
+                                </p>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <span class="text-xs text-charcoal/60">Half Dozen</span>
+                                    </div>
+                                    <button class="add-to-order bg-sage text-cream px-4 py-2 rounded-lg hover:bg-sage/90 transition-colors text-sm">
+                                        Add to Order
+                                    </button>
+                                </div>
+                                <div class="wine-pairing">
+                                    <strong>Wine Pairing:</strong> Chablis Premier Cru 2021
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="menu-card bg-white rounded-2xl overflow-hidden shadow-lg" data-category="appetizers" data-dietary="vegetarian">
+                            <img src="https://kimi-web-img.moonshot.cn/img/www.feedhk.org/9e96d005d1e7009f8a6b872507ff1278a3173fb6.png" alt="Burrata Caprese" class="w-full h-48 object-cover">
+                            <div class="p-6">
+                                <div class="flex justify-between items-start mb-3">
+                                    <h3 class="text-xl font-bold text-charcoal" style="font-family: 'Crimson Text', serif;">
+                                        Burrata Caprese
+                                    </h3>
+                                    <span class="text-xl font-bold text-sienna">$18</span>
+                                </div>
+                                <p class="text-charcoal/70 mb-4 text-sm">
+                                    Creamy burrata cheese with heirloom tomatoes, fresh basil, 
+                                    aged balsamic, and extra virgin olive oil.
+                                </p>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <span class="dietary-icon vegetarian">V</span>
+                                        <span class="dietary-icon gluten-free">GF</span>
+                                    </div>
+                                    <button class="add-to-order bg-sage text-cream px-4 py-2 rounded-lg hover:bg-sage/90 transition-colors text-sm">
+                                        Add to Order
+                                    </button>
+                                </div>
+                                <div class="wine-pairing">
+                                    <strong>Wine Pairing:</strong> Pinot Grigio Alto Adige 2022
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="menu-card bg-white rounded-2xl overflow-hidden shadow-lg" data-category="appetizers" data-dietary="gluten-free">
+                            <img src="https://kimi-web-img.moonshot.cn/img/static.vecteezy.com/1ffe22e1fa37721f63a42f7b8edec137a1629466.jpg" alt="Tuna Tartare" class="w-full h-48 object-cover">
+                            <div class="p-6">
+                                <div class="flex justify-between items-start mb-3">
+                                    <h3 class="text-xl font-bold text-charcoal" style="font-family: 'Crimson Text', serif;">
+                                        Tuna Tartare
+                                    </h3>
+                                    <span class="text-xl font-bold text-sienna">$22</span>
+                                </div>
+                                <p class="text-charcoal/70 mb-4 text-sm">
+                                    Sushi-grade yellowfin tuna with avocado, cucumber, sesame oil, 
+                                    and citrus ponzu dressing.
+                                </p>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <span class="dietary-icon gluten-free">GF</span>
+                                        <span class="text-xs text-charcoal/60">Fresh Daily</span>
+                                    </div>
+                                    <button class="add-to-order bg-sage text-cream px-4 py-2 rounded-lg hover:bg-sage/90 transition-colors text-sm">
+                                        Add to Order
+                                    </button>
+                                </div>
+                                <div class="wine-pairing">
+                                    <strong>Wine Pairing:</strong> Sancerre 2022
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Main Courses -->
+                        <div class="menu-card bg-white rounded-2xl overflow-hidden shadow-lg" data-category="mains">
+                            <img src="./resources/chef-specials/beef-wellington.jpg" alt="Beef Wellington" class="w-full h-48 object-cover">
+                            <div class="p-6">
+                                <div class="flex justify-between items-start mb-3">
+                                    <h3 class="text-xl font-bold text-charcoal" style="font-family: 'Crimson Text', serif;">
+                                        Beef Wellington
+                                    </h3>
+                                    <span class="text-xl font-bold text-sienna">$48</span>
+                                </div>
+                                <p class="text-charcoal/70 mb-4 text-sm">
+                                    Prime beef tenderloin with mushroom duxelles, wrapped in golden 
+                                    puff pastry, served with red wine reduction.
+                                </p>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <span class="text-xs text-charcoal/60">Chef's Signature</span>
+                                    </div>
+                                    <button class="add-to-order bg-sage text-cream px-4 py-2 rounded-lg hover:bg-sage/90 transition-colors text-sm">
+                                        Add to Order
+                                    </button>
+                                </div>
+                                <div class="wine-pairing">
+                                    <strong>Wine Pairing:</strong> Château Margaux 2015
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="menu-card bg-white rounded-2xl overflow-hidden shadow-lg" data-category="mains">
+                            <img src="./resources/chef-specials/lobster-risotto.jpg" alt="Lobster Risotto" class="w-full h-48 object-cover">
+                            <div class="p-6">
+                                <div class="flex justify-between items-start mb-3">
+                                    <h3 class="text-xl font-bold text-charcoal" style="font-family: 'Crimson Text', serif;">
+                                        Lobster Risotto
+                                    </h3>
+                                    <span class="text-xl font-bold text-sienna">$42</span>
+                                </div>
+                                <p class="text-charcoal/70 mb-4 text-sm">
+                                    Creamy Arborio rice with fresh Maine lobster, shaved fennel, 
+                                    sea beans, and Grana Padano cheese.
+                                </p>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <span class="text-xs text-charcoal/60">Gluten-Free Available</span>
+                                    </div>
+                                    <button class="add-to-order bg-sage text-cream px-4 py-2 rounded-lg hover:bg-sage/90 transition-colors text-sm">
+                                        Add to Order
+                                    </button>
+                                </div>
+                                <div class="wine-pairing">
+                                    <strong>Wine Pairing:</strong> Gavi di Gavi 2021
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="menu-card bg-white rounded-2xl overflow-hidden shadow-lg" data-category="mains">
+                            <img src="./resources/menu-items/duck-confit.jpg" alt="Duck Confit" class="w-full h-48 object-cover">
+                            <div class="p-6">
+                                <div class="flex justify-between items-start mb-3">
+                                    <h3 class="text-xl font-bold text-charcoal" style="font-family: 'Crimson Text', serif;">
+                                        Duck Confit
+                                    </h3>
+                                    <span class="text-xl font-bold text-sienna">$36</span>
+                                </div>
+                                <p class="text-charcoal/70 mb-4 text-sm">
+                                    Slow-cooked duck leg with cherry gastrique, roasted root vegetables, 
+                                    and fresh thyme.
+                                </p>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <span class="text-xs text-charcoal/60">French Classic</span>
+                                    </div>
+                                    <button class="add-to-order bg-sage text-cream px-4 py-2 rounded-lg hover:bg-sage/90 transition-colors text-sm">
+                                        Add to Order
+                                    </button>
+                                </div>
+                                <div class="wine-pairing">
+                                    <strong>Wine Pairing:</strong> Côtes du Rhône 2020
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="menu-card bg-white rounded-2xl overflow-hidden shadow-lg" data-category="mains" data-dietary="gluten-free">
+                            <img src="./resources/chef-specials/scallops.jpg" alt="Pan-Seared Scallops" class="w-full h-48 object-cover">
+                            <div class="p-6">
+                                <div class="flex justify-between items-start mb-3">
+                                    <h3 class="text-xl font-bold text-charcoal" style="font-family: 'Crimson Text', serif;">
+                                        Pan-Seared Scallops
+                                    </h3>
+                                    <span class="text-xl font-bold text-sienna">$36</span>
+                                </div>
+                                <p class="text-charcoal/70 mb-4 text-sm">
+                                    Diver scallops with pomegranate glaze, celeriac purée, 
+                                    and pomegranate seeds.
+                                </p>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <span class="dietary-icon gluten-free">GF</span>
+                                        <span class="text-xs text-charcoal/60">Ocean Fresh</span>
+                                    </div>
+                                    <button class="add-to-order bg-sage text-cream px-4 py-2 rounded-lg hover:bg-sage/90 transition-colors text-sm">
+                                        Add to Order
+                                    </button>
+                                </div>
+                                <div class="wine-pairing">
+                                    <strong>Wine Pairing:</strong> White Burgundy 2021
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Desserts -->
+                        <div class="menu-card bg-white rounded-2xl overflow-hidden shadow-lg" data-category="desserts" data-dietary="vegetarian">
+                            <img src="./resources/menu-items/chocolate-souffle.jpg" alt="Chocolate Soufflé" class="w-full h-48 object-cover">
+                            <div class="p-6">
+                                <div class="flex justify-between items-start mb-3">
+                                    <h3 class="text-xl font-bold text-charcoal" style="font-family: 'Crimson Text', serif;">
+                                        Chocolate Soufflé
+                                    </h3>
+                                    <span class="text-xl font-bold text-sienna">$16</span>
+                                </div>
+                                <p class="text-charcoal/70 mb-4 text-sm">
+                                    Warm dark chocolate soufflé with vanilla bean ice cream 
+                                    and raspberry coulis.
+                                </p>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <span class="dietary-icon vegetarian">V</span>
+                                        <span class="text-xs text-charcoal/60">Made to Order</span>
+                                    </div>
+                                    <button class="add-to-order bg-sage text-cream px-4 py-2 rounded-lg hover:bg-sage/90 transition-colors text-sm">
+                                        Add to Order
+                                    </button>
+                                </div>
+                                <div class="wine-pairing">
+                                    <strong>Wine Pairing:</strong> Port Vintage 2017
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="menu-card bg-white rounded-2xl overflow-hidden shadow-lg" data-category="desserts" data-dietary="vegetarian">
+                            <img src="https://kimi-web-img.moonshot.cn/img/img.freepik.com/14d3590abfd06fa4af5bff3fee6df1d86c8a10f3.jpg" alt="Crème Brûlée" class="w-full h-48 object-cover">
+                            <div class="p-6">
+                                <div class="flex justify-between items-start mb-3">
+                                    <h3 class="text-xl font-bold text-charcoal" style="font-family: 'Crimson Text', serif;">
+                                        Vanilla Crème Brûlée
+                                    </h3>
+                                    <span class="text-xl font-bold text-sienna">$14</span>
+                                </div>
+                                <p class="text-charcoal/70 mb-4 text-sm">
+                                    Classic vanilla bean custard with caramelized sugar crust 
+                                    and fresh berries.
+                                </p>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <span class="dietary-icon vegetarian">V</span>
+                                        <span class="dietary-icon gluten-free">GF</span>
+                                    </div>
+                                    <button class="add-to-order bg-sage text-cream px-4 py-2 rounded-lg hover:bg-sage/90 transition-colors text-sm">
+                                        Add to Order
+                                    </button>
+                                </div>
+                                <div class="wine-pairing">
+                                    <strong>Wine Pairing:</strong> Moscato d'Asti 2022
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Beverages -->
+                        <div class="menu-card bg-white rounded-2xl overflow-hidden shadow-lg" data-category="beverages">
+                            <img src="https://kimi-web-img.moonshot.cn/img/memolighting.com/04891c16886d0b8844d24676ea0e4d7bbfd55dfd.jpg" alt="Craft Cocktails" class="w-full h-48 object-cover">
+                            <div class="p-6">
+                                <div class="flex justify-between items-start mb-3">
+                                    <h3 class="text-xl font-bold text-charcoal" style="font-family: 'Crimson Text', serif;">
+                                        Signature Cocktails
+                                    </h3>
+                                    <span class="text-xl font-bold text-sienna">$16</span>
+                                </div>
+                                <p class="text-charcoal/70 mb-4 text-sm">
+                                    Artisanal cocktails crafted with premium spirits and fresh ingredients. 
+                                    Ask for our seasonal specials.
+                                </p>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <span class="text-xs text-charcoal/60">House Specialties</span>
+                                    </div>
+                                    <button class="add-to-order bg-sage text-cream px-4 py-2 rounded-lg hover:bg-sage/90 transition-colors text-sm">
+                                        Add to Order
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="menu-card bg-white rounded-2xl overflow-hidden shadow-lg" data-category="beverages">
+                            <img src="https://kimi-web-img.moonshot.cn/img/www.ledyilighting.com/3dfd717331189bccab54daf8f34ad2577b63cc0f.jpg" alt="Wine Selection" class="w-full h-48 object-cover">
+                            <div class="p-6">
+                                <div class="flex justify-between items-start mb-3">
+                                    <h3 class="text-xl font-bold text-charcoal" style="font-family: 'Crimson Text', serif;">
+                                        Wine by the Glass
+                                    </h3>
+                                    <span class="text-xl font-bold text-sienna">$12-28</span>
+                                </div>
+                                <p class="text-charcoal/70 mb-4 text-sm">
+                                    Curated selection of premium wines from renowned vineyards 
+                                    around the world.
+                                </p>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <span class="text-xs text-charcoal/60">Sommelier Selected</span>
+                                    </div>
+                                    <button class="add-to-order bg-sage text-cream px-4 py-2 rounded-lg hover:bg-sage/90 transition-colors text-sm">
+                                        Add to Order
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Order Summary -->
+    <section class="py-16 bg-charcoal text-cream">
+        <div class="max-w-4xl mx-auto px-6">
+            <div class="text-center mb-12 reveal">
+                <h2 class="text-4xl font-bold mb-4" style="font-family: 'Playfair Display', serif;">
+                    Your Order Summary
+                </h2>
+                <p class="text-xl text-cream/80">
+                    Review your selections and proceed to reservation
+                </p>
+            </div>
+            
+            <div class="order-summary p-8">
+                <div id="order-items" class="space-y-4 mb-8">
+                    <div class="text-center text-charcoal/50 py-8">
+                        No items selected yet. Add dishes from our menu above.
+                    </div>
+                </div>
+                
+                <div class="border-t border-charcoal/20 pt-6">
+                    <div class="flex justify-between items-center text-xl font-bold text-charcoal mb-6">
+                        <span>Total:</span>
+                        <span id="order-total">$0.00</span>
+                    </div>
+                    
+                    <button id="proceed-reservation" class="w-full bg-sienna text-cream py-4 rounded-lg text-lg font-semibold hover:bg-sienna/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                        Proceed to Reservation
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-charcoal text-cream py-12">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center">
+                <div class="flex items-center justify-center space-x-2 mb-6">
+                    <div class="w-8 h-8 bg-sage rounded-full flex items-center justify-center">
+                        <span class="text-cream font-bold text-sm">S</span>
+                    </div>
+                    <span class="text-2xl font-bold" style="font-family: 'Playfair Display', serif;">Savoir</span>
+                </div>
+                
+                <p class="text-cream/70 mb-6 max-w-2xl mx-auto">
+                    Experience the art of fine dining in an atmosphere of warmth and sophistication. 
+                    Every meal is a celebration of flavor, technique, and passion.
+                </p>
+                
+                <div class="border-t border-cream/20 pt-6">
+                    <p class="text-cream/50 text-sm">
+                        © 2024 Savoir Restaurant. All rights reserved. | 123 Culinary Avenue, Downtown | (555) 123-4567
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Menu functionality
+        let orderItems = [];
+        let currentCategory = 'all';
+        let activeDietaryFilters = [];
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeMenu();
+            initializeScrollEffects();
+        });
+        
+        function initializeMenu() {
+            // Category filters
+            document.querySelectorAll('.category-filter').forEach(filter => {
+                filter.addEventListener('click', handleCategoryFilter);
+            });
+            
+            // Dietary filters
+            document.querySelectorAll('.dietary-filter').forEach(filter => {
+                filter.addEventListener('change', handleDietaryFilter);
+            });
+            
+            // Search functionality
+            document.getElementById('menu-search').addEventListener('input', handleSearch);
+            
+            // Add to order buttons
+            document.querySelectorAll('.add-to-order').forEach(button => {
+                button.addEventListener('click', handleAddToOrder);
+            });
+            
+            // Proceed to reservation
+            document.getElementById('proceed-reservation').addEventListener('click', proceedToReservation);
+        }
+        
+        function handleCategoryFilter(e) {
+            // Update active state
+            document.querySelectorAll('.category-filter').forEach(f => f.classList.remove('active'));
+            e.target.classList.add('active');
+            
+            currentCategory = e.target.dataset.category;
+            filterMenuItems();
+        }
+        
+        function handleDietaryFilter(e) {
+            const dietary = e.target.dataset.dietary;
+            
+            if (e.target.checked) {
+                activeDietaryFilters.push(dietary);
+            } else {
+                activeDietaryFilters = activeDietaryFilters.filter(f => f !== dietary);
+            }
+            
+            filterMenuItems();
+        }
+        
+        function handleSearch(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const menuCards = document.querySelectorAll('.menu-card');
+            
+            menuCards.forEach(card => {
+                const title = card.querySelector('h3').textContent.toLowerCase();
+                const description = card.querySelector('p').textContent.toLowerCase();
+                
+                if (title.includes(searchTerm) || description.includes(searchTerm)) {
+                    card.classList.remove('hidden');
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+        }
+        
+        function filterMenuItems() {
+            const menuCards = document.querySelectorAll('.menu-card');
+            
+            menuCards.forEach(card => {
+                const cardCategory = card.dataset.category;
+                const cardDietary = card.dataset.dietary;
+                
+                let categoryMatch = currentCategory === 'all' || cardCategory === currentCategory;
+                let dietaryMatch = activeDietaryFilters.length === 0 || 
+                    activeDietaryFilters.every(filter => cardDietary && cardDietary.includes(filter));
+                
+                if (categoryMatch && dietaryMatch) {
+                    card.classList.remove('hidden');
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+        }
+        
+        function handleAddToOrder(e) {
+            const card = e.target.closest('.menu-card');
+            const title = card.querySelector('h3').textContent;
+            const price = card.querySelector('.text-sienna').textContent;
+            const image = card.querySelector('img').src;
+            
+            // Check if item already exists in order
+            const existingItem = orderItems.find(item => item.title === title);
+            
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                orderItems.push({
+                    title,
+                    price: parseFloat(price.replace('$', '')),
+                    quantity: 1,
+                    image
+                });
+            }
+            
+            updateOrderSummary();
+            showNotification(`${title} added to your order!`);
+            
+            // Animate button
+            anime({
+                targets: e.target,
+                scale: [1, 0.95, 1],
+                duration: 200,
+                easing: 'easeOutQuad'
+            });
+        }
+        
+        function updateOrderSummary() {
+            const orderItemsContainer = document.getElementById('order-items');
+            const orderTotalElement = document.getElementById('order-total');
+            const proceedButton = document.getElementById('proceed-reservation');
+            
+            if (orderItems.length === 0) {
+                orderItemsContainer.innerHTML = `
+                    <div class="text-center text-charcoal/50 py-8">
+                        No items selected yet. Add dishes from our menu above.
+                    </div>
+                `;
+                orderTotalElement.textContent = '$0.00';
+                proceedButton.disabled = true;
+                return;
+            }
+            
+            let total = 0;
+            orderItemsContainer.innerHTML = orderItems.map(item => {
+                const itemTotal = item.price * item.quantity;
+                total += itemTotal;
+                
+                return `
+                    <div class="flex items-center justify-between py-3 border-b border-charcoal/10">
+                        <div class="flex items-center space-x-3">
+                            <img src="${item.image}" alt="${item.title}" class="w-12 h-12 object-cover rounded-lg">
+                            <div>
+                                <h4 class="font-semibold text-charcoal text-sm">${item.title}</h4>
+                                <p class="text-charcoal/60 text-xs">$${item.price.toFixed(2)} each</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <div class="quantity-controls">
+                                <button class="quantity-btn" onclick="updateQuantity('${item.title}', -1)">-</button>
+                                <span class="font-semibold">${item.quantity}</span>
+                                <button class="quantity-btn" onclick="updateQuantity('${item.title}', 1)">+</button>
+                            </div>
+                            <button class="text-red-500 hover:text-red-700" onclick="removeItem('${item.title}')">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            orderTotalElement.textContent = `$${total.toFixed(2)}`;
+            proceedButton.disabled = false;
+        }
+        
+        function updateQuantity(title, change) {
+            const item = orderItems.find(item => item.title === title);
+            if (item) {
+                item.quantity += change;
+                if (item.quantity <= 0) {
+                    removeItem(title);
+                } else {
+                    updateOrderSummary();
+                }
+            }
+        }
+        
+        function removeItem(title) {
+            orderItems = orderItems.filter(item => item.title !== title);
+            updateOrderSummary();
+        }
+        
+        function proceedToReservation() {
+            if (orderItems.length === 0) return;
+            
+            // Store order data and redirect to reservation
+            localStorage.setItem('savoir-order', JSON.stringify(orderItems));
+            window.location.href = 'index.html#reservation';
+        }
+        
+        function scrollToReservation() {
+            window.location.href = 'index.html#reservation';
+        }
+        
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-24 right-6 z-50 p-4 rounded-lg shadow-lg max-w-sm bg-sage text-cream';
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            // Animate notification
+            anime({
+                targets: notification,
+                translateX: [300, 0],
+                opacity: [0, 1],
+                duration: 300,
+                easing: 'easeOutQuad'
+            });
+            
+            // Auto remove after 3 seconds
+            setTimeout(() => {
+                anime({
+                    targets: notification,
+                    translateX: [0, 300],
+                    opacity: [1, 0],
+                    duration: 300,
+                    easing: 'easeInQuad',
+                    complete: () => notification.remove()
+                });
+            }, 3000);
+        }
+        
+        // Scroll reveal animations
+        function initializeScrollEffects() {
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('active');
+                    }
+                });
+            }, observerOptions);
+
+            document.querySelectorAll('.reveal').forEach(el => {
+                observer.observe(el);
+            });
+        }
+    </script>
+</body>
+</html>

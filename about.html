@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About - Savoir Restaurant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=Crimson+Text:wght@400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --charcoal: #2C2C2C;
+            --cream: #F8F6F0;
+            --sage: #8B9A8C;
+            --sienna: #A0522D;
+            --espresso: #3A3A3A;
+        }
+        
+        body {
+            background-color: var(--cream);
+            color: var(--espresso);
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .nav-blur {
+            backdrop-filter: blur(20px);
+            background: rgba(248, 246, 240, 0.95);
+        }
+        
+        .hero-about {
+            background-image: url('./resources/gallery/restaurant-interior.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+        
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+        
+        .gallery-item {
+            position: relative;
+            overflow: hidden;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .gallery-item:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(44, 44, 44, 0.15);
+        }
+        
+        .gallery-item img {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+        
+        .gallery-item:hover img {
+            transform: scale(1.05);
+        }
+        
+        .gallery-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(44, 44, 44, 0.8));
+            color: white;
+            padding: 24px;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .gallery-item:hover .gallery-overlay {
+            transform: translateY(0);
+        }
+        
+        .lightbox {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(44, 44, 44, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .lightbox.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .lightbox-content {
+            max-width: 90vw;
+            max-height: 90vh;
+            position: relative;
+        }
+        
+        .lightbox img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+        
+        .lightbox-close {
+            position: absolute;
+            top: -40px;
+            right: 0;
+            color: white;
+            font-size: 30px;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            transition: background 0.2s ease;
+        }
+        
+        .lightbox-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .team-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(44, 44, 44, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .team-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(44, 44, 44, 0.15);
+        }
+        
+        .timeline {
+            position: relative;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--sage);
+            transform: translateX(-50%);
+        }
+        
+        .timeline-item {
+            position: relative;
+            margin-bottom: 48px;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 24px;
+            width: 12px;
+            height: 12px;
+            background: var(--sage);
+            border-radius: 50%;
+            transform: translateX(-50%);
+            z-index: 2;
+        }
+        
+        .timeline-content {
+            width: 45%;
+            padding: 24px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(44, 44, 44, 0.1);
+        }
+        
+        .timeline-item:nth-child(odd) .timeline-content {
+            margin-left: 55%;
+        }
+        
+        .timeline-item:nth-child(even) .timeline-content {
+            margin-right: 55%;
+        }
+        
+        @media (max-width: 768px) {
+            .timeline::before {
+                left: 24px;
+            }
+            
+            .timeline-item::before {
+                left: 24px;
+            }
+            
+            .timeline-content {
+                width: calc(100% - 60px);
+                margin-left: 60px !important;
+                margin-right: 0 !important;
+            }
+        }
+        
+        .award-badge {
+            background: linear-gradient(135deg, var(--sage), var(--sienna));
+            color: var(--cream);
+            padding: 8px 16px;
+            border-radius: 24px;
+            font-size: 14px;
+            font-weight: 600;
+            display: inline-block;
+            margin: 4px;
+        }
+        
+        .testimonial-card {
+            background: white;
+            padding: 32px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(44, 44, 44, 0.1);
+            position: relative;
+        }
+        
+        .testimonial-card::before {
+            content: '"';
+            position: absolute;
+            top: -10px;
+            left: 24px;
+            font-size: 60px;
+            color: var(--sage);
+            font-family: 'Playfair Display', serif;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 nav-blur border-b border-sage/20">
+        <div class="max-w-7xl mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 bg-sage rounded-full flex items-center justify-center">
+                        <span class="text-cream font-bold text-sm">S</span>
+                    </div>
+                    <span class="text-2xl font-bold text-charcoal" style="font-family: 'Playfair Display', serif;">Savoir</span>
+                </div>
+                
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="index.html" class="text-charcoal/70 hover:text-charcoal transition-colors">Home</a>
+                    <a href="menu.html" class="text-charcoal/70 hover:text-charcoal transition-colors">Menu</a>
+                    <a href="about.html" class="text-charcoal font-medium border-b-2 border-sienna">About</a>
+                    <button onclick="scrollToReservation()" class="bg-sienna text-cream px-6 py-2 rounded-full hover:bg-sienna/90 transition-colors">
+                        Reserve Table
+                    </button>
+                </div>
+                
+                <button class="md:hidden text-charcoal">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="relative min-h-screen hero-about flex items-center justify-center">
+        <div class="absolute inset-0 bg-charcoal/50"></div>
+        
+        <div class="relative z-10 text-center max-w-4xl mx-auto px-6">
+            <h1 class="text-6xl md:text-8xl font-bold text-cream mb-6 reveal" style="font-family: 'Playfair Display', serif;">
+                Our Story
+            </h1>
+            <p class="text-xl md:text-2xl text-cream/90 mb-8 max-w-3xl mx-auto reveal">
+                A journey of passion, craftsmanship, and culinary excellence that began with a simple dream: 
+                to create unforgettable dining experiences.
+            </p>
+        </div>
+    </section>
+
+    <!-- Philosophy Section -->
+    <section class="py-20 bg-cream">
+        <div class="max-w-6xl mx-auto px-6">
+            <div class="grid lg:grid-cols-2 gap-16 items-center">
+                <div class="reveal">
+                    <h2 class="text-5xl font-bold text-charcoal mb-6" style="font-family: 'Playfair Display', serif;">
+                        Culinary Philosophy
+                    </h2>
+                    <p class="text-lg text-charcoal/80 mb-6 leading-relaxed">
+                        At Savoir, we believe that dining is more than sustenance—it's an art form that engages 
+                        all senses. Our philosophy centers on three pillars: exceptional ingredients, innovative 
+                        techniques, and warm hospitality.
+                    </p>
+                    <p class="text-lg text-charcoal/80 mb-6 leading-relaxed">
+                        We partner directly with local farms, artisanal producers, and sustainable fisheries to 
+                        source the finest seasonal ingredients. Each dish is crafted to tell a story, combining 
+                        classical French techniques with modern creativity.
+                    </p>
+                    <p class="text-lg text-charcoal/80 leading-relaxed">
+                        Our commitment extends beyond the plate to create an atmosphere where every guest feels 
+                        welcomed, valued, and inspired. This is dining as it should be—an celebration of life's 
+                        finest pleasures.
+                    </p>
+                </div>
+                
+                <div class="reveal">
+                    <img src="./resources/gallery/chef-portrait.jpg" alt="Chef Alexandre Dubois" 
+                         class="w-full rounded-2xl shadow-lg">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Timeline Section -->
+    <section class="py-20 bg-charcoal text-cream">
+        <div class="max-w-6xl mx-auto px-6">
+            <div class="text-center mb-16 reveal">
+                <h2 class="text-5xl font-bold mb-4" style="font-family: 'Playfair Display', serif;">
+                    Our Journey
+                </h2>
+                <p class="text-xl text-cream/80 max-w-2xl mx-auto">
+                    From humble beginnings to culinary excellence, follow our path of growth and recognition.
+                </p>
+            </div>
+            
+            <div class="timeline">
+                <div class="timeline-item reveal">
+                    <div class="timeline-content">
+                        <h3 class="text-2xl font-bold mb-3">2018 - The Beginning</h3>
+                        <p class="text-cream/80">
+                            Chef Alexandre Dubois opens Savoir with a vision to bring refined French cuisine 
+                            to the heart of the city, starting with just 12 tables and an unwavering commitment 
+                            to excellence.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="timeline-item reveal">
+                    <div class="timeline-content">
+                        <h3 class="text-2xl font-bold mb-3">2019 - First Recognition</h3>
+                        <p class="text-cream/80">
+                            Awarded "Best New Restaurant" by the Culinary Institute and receives our first 
+                            Michelin star recommendation, establishing Savoir as a destination for fine dining.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="timeline-item reveal">
+                    <div class="timeline-content">
+                        <h3 class="text-2xl font-bold mb-3">2021 - Sustainability Focus</h3>
+                        <p class="text-cream/80">
+                            Launch our farm-to-table program, partnering directly with local organic farms 
+                            and implementing zero-waste practices in our kitchen operations.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="timeline-item reveal">
+                    <div class="timeline-content">
+                        <h3 class="text-2xl font-bold mb-3">2023 - Michelin Star</h3>
+                        <p class="text-cream/80">
+                            Awarded our first Michelin star, recognizing our dedication to culinary excellence 
+                            and innovative approach to modern French cuisine.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="timeline-item reveal">
+                    <div class="timeline-content">
+                        <h3 class="text-2xl font-bold mb-3">2024 - Present Day</h3>
+                        <p class="text-cream/80">
+                            Continuing to evolve and innovate, with a team of 25 culinary professionals 
+                            serving over 200 guests nightly while maintaining our commitment to excellence.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Team Section -->
+    <section class="py-20 bg-cream">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16 reveal">
+                <h2 class="text-5xl font-bold text-charcoal mb-4" style="font-family: 'Playfair Display', serif;">
+                    Meet Our Team
+                </h2>
+                <p class="text-xl text-charcoal/70 max-w-2xl mx-auto">
+                    A collective of passionate culinary professionals dedicated to creating extraordinary experiences.
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="team-card reveal">
+                    <img src="./resources/gallery/chef-portrait.jpg" alt="Chef Alexandre Dubois" class="w-full h-64 object-cover">
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold text-charcoal mb-2" style="font-family: 'Crimson Text', serif;">
+                            Chef Alexandre Dubois
+                        </h3>
+                        <p class="text-sage font-semibold mb-3">Executive Chef & Founder</p>
+                        <p class="text-charcoal/70 text-sm leading-relaxed">
+                            With over 20 years of experience in Michelin-starred kitchens across France and America, 
+                            Chef Dubois brings classical training and innovative vision to every dish.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="team-card reveal">
+                    <img src="https://kimi-web-img.moonshot.cn/img/img.freepik.com/a74887204745500e10ea5f36ba784b5d216a451f.jpg" alt="Marie Laurent" class="w-full h-64 object-cover">
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold text-charcoal mb-2" style="font-family: 'Crimson Text', serif;">
+                            Marie Laurent
+                        </h3>
+                        <p class="text-sage font-semibold mb-3">Sous Chef</p>
+                        <p class="text-charcoal/70 text-sm leading-relaxed">
+                            A graduate of Le Cordon Bleu Paris, Marie specializes in pastry and dessert innovation, 
+                            bringing artistic flair to our sweet offerings.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="team-card reveal">
+                    <img src="https://kimi-web-img.moonshot.cn/img/img.freepik.com/17361af440156bcef5890d84dd9e25824fd4d702.jpg" alt="James Mitchell" class="w-full h-64 object-cover">
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold text-charcoal mb-2" style="font-family: 'Crimson Text', serif;">
+                            James Mitchell
+                        </h3>
+                        <p class="text-sage font-semibold mb-3">Sommelier</p>
+                        <p class="text-charcoal/70 text-sm leading-relaxed">
+                            Our certified sommelier with expertise in old world wines, James curates our 
+                            award-winning wine list and creates perfect pairings for every menu.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Gallery Section -->
+    <section class="py-20 bg-cream">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16 reveal">
+                <h2 class="text-5xl font-bold text-charcoal mb-4" style="font-family: 'Playfair Display', serif;">
+                    Gallery
+                </h2>
+                <p class="text-xl text-charcoal/70 max-w-2xl mx-auto">
+                    Step inside our world of culinary artistry and elegant dining experiences.
+                </p>
+            </div>
+            
+            <div class="gallery-grid">
+                <div class="gallery-item reveal" onclick="openLightbox('./resources/gallery/restaurant-interior.jpg', 'Elegant Dining Room')">
+                    <img src="./resources/gallery/restaurant-interior.jpg" alt="Elegant Dining Room">
+                    <div class="gallery-overlay">
+                        <h3 class="text-xl font-bold mb-2">Elegant Dining Room</h3>
+                        <p class="text-sm opacity-90">Intimate atmosphere with warm lighting</p>
+                    </div>
+                </div>
+                
+                <div class="gallery-item reveal" onclick="openLightbox('./resources/gallery/kitchen-action.jpg', 'Kitchen in Action')">
+                    <img src="./resources/gallery/kitchen-action.jpg" alt="Kitchen in Action">
+                    <div class="gallery-overlay">
+                        <h3 class="text-xl font-bold mb-2">Kitchen in Action</h3>
+                        <p class="text-sm opacity-90">Behind the scenes culinary artistry</p>
+                    </div>
+                </div>
+                
+                <div class="gallery-item reveal" onclick="openLightbox('./resources/hero-restaurant.jpg', 'Restaurant Ambiance')">
+                    <img src="./resources/hero-restaurant.jpg" alt="Restaurant Ambiance">
+                    <div class="gallery-overlay">
+                        <h3 class="text-xl font-bold mb-2">Restaurant Ambiance</h3>
+                        <p class="text-sm opacity-90">Sophisticated interior design</p>
+                    </div>
+                </div>
+                
+                <div class="gallery-item reveal" onclick="openLightbox('./resources/chef-specials/beef-wellington.jpg', 'Signature Beef Wellington')">
+                    <img src="./resources/chef-specials/beef-wellington.jpg" alt="Signature Beef Wellington">
+                    <div class="gallery-overlay">
+                        <h3 class="text-xl font-bold mb-2">Signature Beef Wellington</h3>
+                        <p class="text-sm opacity-90">Our most celebrated dish</p>
+                    </div>
+                </div>
+                
+                <div class="gallery-item reveal" onclick="openLightbox('./resources/chef-specials/lobster-risotto.jpg', 'Lobster Risotto')">
+                    <img src="./resources/chef-specials/lobster-risotto.jpg" alt="Lobster Risotto">
+                    <div class="gallery-overlay">
+                        <h3 class="text-xl font-bold mb-2">Lobster Risotto</h3>
+                        <p class="text-sm opacity-90">Creamy perfection with fresh Maine lobster</p>
+                    </div>
+                </div>
+                
+                <div class="gallery-item reveal" onclick="openLightbox('./resources/menu-items/chocolate-souffle.jpg', 'Chocolate Soufflé')">
+                    <img src="./resources/menu-items/chocolate-souffle.jpg" alt="Chocolate Soufflé">
+                    <div class="gallery-overlay">
+                        <h3 class="text-xl font-bold mb-2">Chocolate Soufflé</h3>
+                        <p class="text-sm opacity-90">Decadent dessert artistry</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Awards & Recognition -->
+    <section class="py-20 bg-charcoal text-cream">
+        <div class="max-w-6xl mx-auto px-6">
+            <div class="text-center mb-16 reveal">
+                <h2 class="text-5xl font-bold mb-4" style="font-family: 'Playfair Display', serif;">
+                    Awards & Recognition
+                </h2>
+                <p class="text-xl text-cream/80 max-w-2xl mx-auto">
+                    Honored to be recognized by the culinary community and our peers.
+                </p>
+            </div>
+            
+            <div class="text-center mb-12 reveal">
+                <div class="flex flex-wrap justify-center gap-4 mb-8">
+                    <span class="award-badge">Michelin Star 2023</span>
+                    <span class="award-badge">James Beard Nominee</span>
+                    <span class="award-badge">Wine Spectator Award</span>
+                    <span class="award-badge">Best New Restaurant 2019</span>
+                    <span class="award-badge">AAA Five Diamond</span>
+                </div>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="testimonial-card reveal">
+                    <p class="text-charcoal/80 mb-4 italic">
+                        "Savoir represents the pinnacle of modern French cuisine. Chef Dubois has created 
+                        something truly special—a restaurant where technique, creativity, and passion converge 
+                        in perfect harmony."
+                    </p>
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-sage rounded-full flex items-center justify-center mr-4">
+                            <span class="text-cream font-bold">MF</span>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-charcoal">Michael Fontaine</p>
+                            <p class="text-charcoal/60 text-sm">Food Critic, Culinary Times</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="testimonial-card reveal">
+                    <p class="text-charcoal/80 mb-4 italic">
+                        "An extraordinary dining experience that rivals the best restaurants in Paris. 
+                        The attention to detail, from the amuse-bouche to the final mignardise, is impeccable."
+                    </p>
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-sienna rounded-full flex items-center justify-center mr-4">
+                            <span class="text-cream font-bold">SC</span>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-charcoal">Sarah Chen</p>
+                            <p class="text-charcoal/60 text-sm">Michelin Guide Inspector</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Lightbox -->
+    <div id="lightbox" class="lightbox">
+        <div class="lightbox-content">
+            <div class="lightbox-close" onclick="closeLightbox()">&times;</div>
+            <img id="lightbox-image" src="" alt="">
+            <div id="lightbox-caption" class="text-center text-white mt-4 text-lg"></div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-charcoal text-cream py-12">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center">
+                <div class="flex items-center justify-center space-x-2 mb-6">
+                    <div class="w-8 h-8 bg-sage rounded-full flex items-center justify-center">
+                        <span class="text-cream font-bold text-sm">S</span>
+                    </div>
+                    <span class="text-2xl font-bold" style="font-family: 'Playfair Display', serif;">Savoir</span>
+                </div>
+                
+                <p class="text-cream/70 mb-6 max-w-2xl mx-auto">
+                    Experience the art of fine dining in an atmosphere of warmth and sophistication. 
+                    Every meal is a celebration of flavor, technique, and passion.
+                </p>
+                
+                <div class="border-t border-cream/20 pt-6">
+                    <p class="text-cream/50 text-sm">
+                        © 2024 Savoir Restaurant. All rights reserved. | 123 Culinary Avenue, Downtown | (555) 123-4567
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeScrollEffects();
+            initializeGallery();
+        });
+        
+        function initializeScrollEffects() {
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('active');
+                    }
+                });
+            }, observerOptions);
+
+            document.querySelectorAll('.reveal').forEach(el => {
+                observer.observe(el);
+            });
+        }
+        
+        function initializeGallery() {
+            // Add keyboard navigation
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeLightbox();
+                }
+            });
+        }
+        
+        function openLightbox(imageSrc, caption) {
+            const lightbox = document.getElementById('lightbox');
+            const lightboxImage = document.getElementById('lightbox-image');
+            const lightboxCaption = document.getElementById('lightbox-caption');
+            
+            lightboxImage.src = imageSrc;
+            lightboxCaption.textContent = caption;
+            lightbox.classList.add('active');
+            
+            // Prevent body scroll
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeLightbox() {
+            const lightbox = document.getElementById('lightbox');
+            lightbox.classList.remove('active');
+            
+            // Restore body scroll
+            document.body.style.overflow = 'auto';
+        }
+        
+        function scrollToReservation() {
+            window.location.href = 'index.html#reservation';
+        }
+        
+        // Close lightbox when clicking outside the image
+        document.getElementById('lightbox').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeLightbox();
+            }
+        });
+    </script>
+</body>
+</html>
